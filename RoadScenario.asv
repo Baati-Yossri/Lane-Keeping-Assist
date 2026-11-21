@@ -1,0 +1,41 @@
+
+%% ROAD SCENARIO SELECTOR
+
+% Choose the road:
+% 1 = Constant-curvature road
+% 2 = Winding S-shaped road
+% 3 = Straight road
+
+if ~exist('roadScenario','var')
+    roadScenario = 1;
+end
+% Simulation duration and time resolution
+StopTime = 5;
+dt = 0.01;
+tRoad = (0:dt:StopTime)';
+% Vehicle speed
+v = 30; % m/s
+
+% Generate curvature according to selected scenario
+switch roadScenario
+
+    case 1
+        % Constant curvature
+        kappaValues = 0.005 * ones(size(tRoad));
+
+    case 2
+        % Smooth winding road: alternating left/right curves
+        kappaValues = 0.005 * sin(2*pi*tRoad/8);
+
+    case 3
+        % Straight road
+        kappaValues = zeros(size(tRoad));
+
+    otherwise
+        error('Invalid road scenario selection.');
+end
+
+% Create a time-dependent signal for Simulink
+kappaSignal = timeseries(kappaValues, tRoad);
+
+disp('Road scenario generated successfully.');

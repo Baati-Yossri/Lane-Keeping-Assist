@@ -1,0 +1,1 @@
+model became unstable when increasing speed and osilattions increased instead of decreased	
