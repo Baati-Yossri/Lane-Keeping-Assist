@@ -1,5 +1,5 @@
 
-function run_LKA(scenario, controllerState)
+function run_LKA(scenario, controllerState, disturbanceState)
 
 %% LKA MASTER FUNCTION
 % Road scenarios:
@@ -11,9 +11,15 @@ function run_LKA(scenario, controllerState)
 % 0 = OFF
 % 1 = ON
 %
+% Disturbance:
+% 0 = OFF
+% 1 = ON
+%
 % Examples:
-% run_LKA(2,0)
-% run_LKA(2,1)
+% run_LKA(2,1,0)  % Winding road, controller ON, no disturbance
+% run_LKA(2,1,1)  % Winding road, controller ON, disturbance
+% run_LKA(2,0,0)  % Winding road, controller OFF, no disturbance
+% run_LKA(2,0,1)  % Winding road, controller OFF, disturbance
 
     clc;
 
@@ -27,12 +33,20 @@ function run_LKA(scenario, controllerState)
         controllerState = 1; % Default: controller ON
     end
 
+    if nargin < 3
+        disturbanceState = 1; % Default: disturbance ON
+    end
+
     if ~ismember(scenario,[1 2 3])
         error('Invalid road scenario. Choose 1, 2, or 3.');
     end
 
     if ~ismember(controllerState,[0 1])
         error('Controller state must be 0 (OFF) or 1 (ON).');
+    end
+
+    if ~ismember(disturbanceState,[0 1])
+        error('Disturbance state must be 0 (OFF) or 1 (ON).');
     end
 
     %% Display configuration
@@ -49,12 +63,19 @@ function run_LKA(scenario, controllerState)
         fprintf('Controller: OFF\n');
     end
 
+    if disturbanceState == 1
+        fprintf('Disturbance: ON\n');
+    else
+        fprintf('Disturbance: OFF\n');
+    end
+
     %% Configure MATLAB workspace
 
     assignin('base','roadScenario',scenario);
     assignin('base','controllerEnabled',controllerState);
+    assignin('base','disturbanceEnabled',disturbanceState);
 
-    %% Generate road curvature
+    %% Generate road curvature and disturbance signals
 
     evalin('base','RoadScenario');
 
@@ -76,7 +97,7 @@ function run_LKA(scenario, controllerState)
 
     assignin('base','out',simOut);
     assignin('base','controllerEnabled',controllerState);
-
+    assignin('base','disturbanceEnabled',disturbanceState);
 
     fprintf('Simulation completed successfully.\n');
 

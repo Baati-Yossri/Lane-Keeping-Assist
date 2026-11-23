@@ -51,27 +51,30 @@ kappaSignal = timeseries(kappaValues, tRoad);
 
 
 
-%% LATERAL DISTURBANCE
 
-% Disturbance starts at 2 seconds
-% Disturbance ends at 2.5 seconds
 
-disturbanceStart = 2.0;
-disturbanceEnd = 2.5;
 
-% Disturbance magnitude (m/s)
-disturbanceMagnitude = 0.5;
+
+%% Disturbance configuration
+
+disturbanceStart = 7.0;
+disturbanceEnd   = 7.1;
+
+lateralMagnitude = 1.5;  % m/s
+headingMagnitude = 2.5;  % rad/s
 
 dyValues = zeros(size(tRoad));
+dphiValues = zeros(size(tRoad));
 
-dyValues(tRoad >= disturbanceStart & ...
-         tRoad <= disturbanceEnd) = disturbanceMagnitude;
+if disturbanceEnabled == 1
 
-% Create disturbance signal for Simulink
+    disturbanceInterval = tRoad >= disturbanceStart & ...
+                          tRoad <= disturbanceEnd;
+
+    dyValues(disturbanceInterval) = lateralMagnitude;
+    dphiValues(disturbanceInterval) = headingMagnitude;
+
+end
+
 dySignal = timeseries(dyValues, tRoad);
-
-
-
-
-
-disp('Road scenario generated successfully.');
+dphiSignal = timeseries(dphiValues, tRoad);
