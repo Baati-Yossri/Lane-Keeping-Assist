@@ -6,7 +6,8 @@
 % Scenario 3: Straight road
 %
 % Controller ON/OFF
-% Lateral disturbance visualization
+% Disturbance ON/OFF
+% Slow motion and highlighting during disturbance and recovery
 
 clc;
 
@@ -39,13 +40,11 @@ Y0 = Yroad(1) + ey(1)*cos(psiRoad(1));
 
 if controllerEnabled == 1
 
-    % Controller ON: position from lateral error
     Xvehicle = Xroad - ey.*sin(psiRoad);
     Yvehicle = Yroad + ey.*cos(psiRoad);
 
 else
 
-    % Controller OFF: straight-line motion
     initialHeading = psiVehicle(1);
 
     Xvehicle = X0 + v*t*cos(initialHeading);
@@ -68,22 +67,42 @@ disp('Road and vehicle trajectories reconstructed.');
 
 %% 6. DISTURBANCE SETTINGS
 
-disturbanceStart = 5.0;
-disturbanceEnd = 5.5;
-
-% Check whether disturbance signal exists
-if exist('dySignal','var')
-
-    dy = interp1(dySignal.Time, ...
-                 dySignal.Data, t, 'previous', 0);
-
-else
-    dy = zeros(size(t));
+if ~exist('disturbanceEnabled','var')
+    disturbanceEnabled = 0;
 end
 
-% Identify disturbance-active samples
-disturbanceActive = ...
-    t >= disturbanceStart & t <= disturbanceEnd;
+if disturbanceEnabled == 1
+
+    disturbanceStart = evalin('base','disturbanceStart');
+    disturbanceEnd = evalin('base','disturbanceEnd');
+
+    recoveryEnd = disturbanceEnd + 2.0;
+
+    if exist('dySignal','var')
+        dy = interp1(dySignal.Time, ...
+                     dySignal.Data, t, 'previous', 0);
+    else
+        dy = zeros(size(t));
+    end
+
+    disturbanceActive = ...
+        t >= disturbanceStart & t <= disturbanceEnd;
+
+    highlightActive = ...
+        t >= disturbanceStart & t <= recoveryEnd;
+
+else
+
+    disturbanceStart = 0;
+    disturbanceEnd = 0;
+    recoveryEnd = 0;
+
+    dy = zeros(size(t));
+
+    disturbanceActive = false(size(t));
+    highlightActive = false(size(t));
+
+end
 
 %% 7. ANIMATION SETTINGS
 
@@ -108,9 +127,9 @@ plot(Xroad,Yroad,'k--','LineWidth',1.2);
 trajectory = animatedline( ...
     'Color','b','LineWidth',1.8);
 
-% Highlight trajectory during disturbance
+% Highlight trajectory during disturbance and recovery
 disturbanceTrajectory = animatedline( ...
-    'Color',[1 0.3 0],'LineWidth',2.5);
+    'Color',[1 0.3 0],'LineWidth',2.8);
 
 % Vehicle body
 car = patch('XData',zeros(1,4), ...
@@ -142,8 +161,14 @@ else
     controllerText = 'OFF';
 end
 
-title(sprintf('LKA - Scenario %d | Controller %s', ...
-      roadScenario,controllerText));
+if disturbanceEnabled == 1
+    disturbanceText = 'ON';
+else
+    disturbanceText = 'OFF';
+end
+
+title(sprintf('LKA - Scenario %d | Controller %s | Disturbance %s', ...
+      roadScenario,controllerText,disturbanceText));
 
 % Animation limits
 margin = 10;
@@ -174,6 +199,19 @@ for i = 1:length(t)
     rotatedX = xc + localX*cos(theta) - localY*sin(theta);
     rotatedY = yc + localX*sin(theta) + localY*cos(theta);
 
+    % Vehicle color and highlighting
+    if highlightActive(i)
+
+        set(car,'FaceColor',[1 0.35 0.05]);
+
+        addpoints(disturbanceTrajectory,xc,yc);
+
+    else
+
+        set(car,'FaceColor',[0.1 0.45 0.9]);
+
+    end
+
     % Update vehicle body
     set(car,'XData',rotatedX,'YData',rotatedY);
 
@@ -182,27 +220,31 @@ for i = 1:length(t)
         'XData',[xc xc+(carLength/2)*cos(theta)], ...
         'YData',[yc yc+(carLength/2)*sin(theta)]);
 
-    % Update vehicle trajectory
+    % Update normal trajectory
     addpoints(trajectory,xc,yc);
-
-    % Highlight trajectory during disturbance
-    if disturbanceActive(i)
-        addpoints(disturbanceTrajectory,xc,yc);
-    end
 
     % Draw lateral deviation
     set(deviationLine, ...
         'XData',[Xroad(i),Xvehicle(i)], ...
         'YData',[Yroad(i),Yvehicle(i)]);
 
-    % Disturbance status
-    if disturbanceActive(i) && abs(dy(i)) > 0
+    %% Disturbance status
 
-        disturbanceStatus = 'DISTURBANCE ACTIVE';
+    if disturbanceEnabled == 1
 
-    elseif t(i) > disturbanceEnd
+        if disturbanceActive(i)
 
-        disturbanceStatus = 'RECOVERY PHASE';
+            disturbanceStatus = 'DISTURBANCE ACTIVE';
+
+        elseif t(i) > disturbanceEnd && t(i) <= recoveryEnd
+
+            disturbanceStatus = 'RECOVERY PHASE';
+
+        else
+
+            disturbanceStatus = 'NORMAL OPERATION';
+
+        end
 
     else
 
@@ -210,25 +252,50 @@ for i = 1:length(t)
 
     end
 
-    % Update information panel
-    set(info,'String',sprintf( ...
-        ['Time: %.2f s\n' ...
-         'Controller: %s\n' ...
-         'Lateral error: %.3f m\n' ...
-         'Heading error: %.4f rad\n' ...
-         'Steering: %.3f rad\n' ...
-         'Disturbance: %.2f m/s\n' ...
-         'Status: %s'], ...
-         t(i),controllerText,ey(i),ephi(i), ...
-         delta(i),dy(i),disturbanceStatus));
+    %% Update information panel
+
+    if disturbanceEnabled == 1
+
+        set(info,'String',sprintf( ...
+            ['Time: %.2f s\n' ...
+             'Controller: %s\n' ...
+             'Disturbance: %s\n' ...
+             'Lateral error: %.3f m\n' ...
+             'Heading error: %.4f rad\n' ...
+             'Steering: %.3f rad\n' ...
+             'Lateral disturbance: %.2f m/s\n' ...
+             'Status: %s'], ...
+             t(i),controllerText,disturbanceText, ...
+             ey(i),ephi(i),delta(i),dy(i),disturbanceStatus));
+
+    else
+
+        set(info,'String',sprintf( ...
+            ['Time: %.2f s\n' ...
+             'Controller: %s\n' ...
+             'Disturbance: OFF\n' ...
+             'Lateral error: %.3f m\n' ...
+             'Heading error: %.4f rad\n' ...
+             'Steering: %.3f rad\n' ...
+             'Status: NORMAL OPERATION'], ...
+             t(i),controllerText,ey(i),ephi(i), ...
+             delta(i)));
+
+    end
 
     drawnow;
 
-if t(i) >= 4.5 && t(i) <= 7.5
-    pause(0.15);
-else
-    pause(0.03);
-end
+    %% Animation speed
+
+    if disturbanceEnabled == 1 && highlightActive(i)
+
+        pause(0.15);  % Slow motion during disturbance and recovery
+
+    else
+
+        pause(0.03);  % Normal animation speed
+
+    end
 
 end
 

@@ -57,8 +57,8 @@ kappaSignal = timeseries(kappaValues, tRoad);
 
 %% Disturbance configuration
 
-disturbanceStart = 7.0;
-disturbanceEnd   = 7.1;
+disturbanceStart = 5.0;
+disturbanceEnd   = 5.1;
 
 lateralMagnitude = 1.5;  % m/s
 headingMagnitude = 2.5;  % rad/s
