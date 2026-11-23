@@ -14,6 +14,8 @@ MATLAB and Simulink project for simulating a Lane Keeping Assist system. The veh
 - Live animation panel showing simulation status and vehicle errors
 - Performance plots for lateral error, heading error, steering angle, and controller command
 
+For the full bicycle-model equations, controller derivation, disturbance model, state-space form, and parameter descriptions, see [EQUATIONS.md](EQUATIONS.md).
+
 ## Requirements
 
 - MATLAB
