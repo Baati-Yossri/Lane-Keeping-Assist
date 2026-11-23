@@ -47,4 +47,31 @@ end
 % Create a time-dependent signal for Simulink
 kappaSignal = timeseries(kappaValues, tRoad);
 
+
+
+
+
+%% LATERAL DISTURBANCE
+
+% Disturbance starts at 2 seconds
+% Disturbance ends at 2.5 seconds
+
+disturbanceStart = 2.0;
+disturbanceEnd = 2.5;
+
+% Disturbance magnitude (m/s)
+disturbanceMagnitude = 0.5;
+
+dyValues = zeros(size(tRoad));
+
+dyValues(tRoad >= disturbanceStart & ...
+         tRoad <= disturbanceEnd) = disturbanceMagnitude;
+
+% Create disturbance signal for Simulink
+dySignal = timeseries(dyValues, tRoad);
+
+
+
+
+
 disp('Road scenario generated successfully.');
