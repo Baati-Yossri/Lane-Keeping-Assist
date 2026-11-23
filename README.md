@@ -1,6 +1,6 @@
 # Lane Keeping Assist (LKA) Simulation
 
-MATLAB and Simulink project for simulating a Lane Keeping Assist system. The vehicle follows a simulated road while a controller regulates lateral position and heading errors. The project includes three road scenarios, controller on/off modes, and a visualization of the vehicle and road.
+MATLAB and Simulink project for simulating a Lane Keeping Assist system. The vehicle follows a simulated road while a controller regulates lateral position and heading errors. The project includes three road scenarios, independent controller and disturbance controls, and a visualization of the vehicle and road.
 
 ## Features
 
@@ -8,8 +8,10 @@ MATLAB and Simulink project for simulating a Lane Keeping Assist system. The veh
 - Winding, S-shaped road
 - Straight road
 - Controller enabled or disabled
-- Lateral disturbance applied during the simulation
+- Configurable lateral and heading disturbances
 - Animated vehicle trajectory
+- Disturbance and recovery highlighting with slow-motion playback
+- Live animation panel showing simulation status and vehicle errors
 - Performance plots for lateral error, heading error, steering angle, and controller command
 
 ## Requirements
@@ -41,35 +43,41 @@ No external MATLAB toolbox is explicitly required by the provided scripts.
    cd("C:\Users\GIGABYTE\Desktop\Perso\ENISO\Semester 1\AUTOMOTIVE ADVANCED SIMULATION\PROJECT - Lane Keeping Assist")
    ```
 
-3. Run a simulation with the controller enabled:
+3. Run a simulation with the controller and disturbance enabled:
 
    ```matlab
-   run_LKA(1, 1)
+   run_LKA(1, 1, 1)
    ```
 
-The first argument is the road scenario and the second argument enables or disables the controller.
+`run_LKA` accepts three arguments:
+
+1. `scenario`: road selection (`1`, `2`, or `3`)
+2. `controllerState`: controller state (`0` = OFF, `1` = ON)
+3. `disturbanceState`: disturbance state (`0` = OFF, `1` = ON)
+
+The controller and disturbance default to **ON** when their arguments are omitted.
 
 ## Road Scenarios
 
 | Scenario | Description | Command |
 |---|---|---|
-| `1` | Constant-curvature road | `run_LKA(1, 1)` |
-| `2` | Winding S-shaped road | `run_LKA(2, 1)` |
-| `3` | Straight road | `run_LKA(3, 1)` |
+| `1` | Constant-curvature road | `run_LKA(1, 1, 1)` |
+| `2` | Winding S-shaped road | `run_LKA(2, 1, 1)` |
+| `3` | Straight road | `run_LKA(3, 1, 1)` |
 
 For controller-off comparison runs, use `0` as the second argument:
 
 ```matlab
-run_LKA(2, 0)
+run_LKA(2, 0, 1)
 ```
 
-Calling `run_LKA` without arguments is not valid. The road scenario must be provided:
+To disable the disturbance, use `0` as the third argument:
 
 ```matlab
-run_LKA(2)
+run_LKA(2, 1, 0)
 ```
 
-This runs scenario 2 with the controller enabled by default.
+Calling `run_LKA` without arguments is not valid because the road scenario must be provided. For example, `run_LKA(2)` runs scenario 2 with both the controller and disturbance enabled by default.
 
 ## Simulation Settings
 
@@ -79,7 +87,10 @@ The default settings are defined in `RoadScenario.m`:
 - Time step: `0.01 s`
 - Vehicle speed: `30 m/s`
 - Lane width: `3.6 m`
-- Lateral disturbance: `0.5 m/s` from `2.0 s` to `2.5 s`
+- Disturbance interval: `5.0 s` to `5.1 s`
+- Lateral disturbance magnitude: `1.5 m/s`
+- Heading disturbance magnitude: `2.5 rad/s`
+- Animation recovery/highlight period: 2 seconds after the disturbance ends
 
 The winding-road curvature is configurable through:
 
@@ -89,6 +100,8 @@ curvaturePeriod = 4;
 ```
 
 The vehicle speed can be changed through the `v` variable in `RoadScenario.m`. The same variable is used when reconstructing the animation.
+
+The disturbance is generated only when `disturbanceEnabled` is `1`. The disturbance signals are exported as `dySignal` and `dphiSignal` for Simulink.
 
 ## Simulation Outputs
 
@@ -105,6 +118,8 @@ The animation script expects the following signals:
 - `out.delta_out` - steering angle
 - `out.u_out` - controller command
 
+When disturbance mode is enabled, the animation also displays the disturbance value, highlights the vehicle and trajectory during the disturbance and recovery phases, and slows playback from `0.03 s` to `0.15 s` per animation step.
+
 To generate the performance dashboard after a simulation:
 
 ```matlab
@@ -118,13 +133,14 @@ The model can also be run directly in MATLAB:
 ```matlab
 roadScenario = 2;
 controllerEnabled = 1;
+disturbanceEnabled = 1;
 RoadScenario
 load_system("LKA_Model")
-sim("LKA_Model")
+out = sim("LKA_Model");
 LKA_Animation_AllRoads
 ```
 
-Alternatively, open `LKA_Model.slx` in Simulink and select **Run**. Run `RoadScenario.m` first so that `kappaSignal`, `dySignal`, and the simulation variables exist in the MATLAB workspace.
+Alternatively, open `LKA_Model.slx` in Simulink and select **Run**. Run `RoadScenario.m` first so that `kappaSignal`, `dySignal`, `dphiSignal`, and the simulation variables exist in the MATLAB workspace. After a manual simulation, assign the simulation output to `out` before launching the animation.
 
 ## Adjusting the Model
 
