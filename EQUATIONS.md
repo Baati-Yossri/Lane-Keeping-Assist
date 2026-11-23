@@ -17,7 +17,7 @@ The model assumes constant longitudinal speed, a rigid vehicle, no tire slip, an
 ## 2. Lateral Position Dynamics
 
 $$
-\boxed{\dot{e}_y = v e_\phi + d_y}
+\displaystyle \boxed{\dot{e}_y = v e_\phi + d_y}
 $$
 
 The lateral error increases when the vehicle heading differs from the road direction. $d_y$ is an external lateral-error-rate disturbance.
@@ -31,7 +31,7 @@ The lateral error increases when the vehicle heading differs from the road direc
 ## 3. Heading Angle Dynamics
 
 $$
-\boxed{\dot{e}_\phi = \frac{v}{L}\delta - v\kappa_r + d_\phi}
+\displaystyle \boxed{\dot{e}_\phi = \frac{v}{L}\delta - v\kappa_r + d_\phi}
 $$
 
 | Symbol | Meaning | Unit |
@@ -49,7 +49,7 @@ The term $\frac{v}{L}\delta$ is the vehicle yaw rate for a bicycle model. The te
 Curvature is the inverse of the road radius:
 
 $$
-\boxed{\kappa_r = \frac{1}{R}}
+\displaystyle \boxed{\kappa_r = \frac{1}{R}}
 $$
 
 - $\kappa_r = 0.005\,\mathrm{m^{-1}}$ for the constant-curvature road.
@@ -59,13 +59,13 @@ $$
 ### Constant-curvature scenario
 
 $$
-\kappa_r(t) = 0.005
+\displaystyle \kappa_r(t) = 0.005
 $$
 
 ### Winding-road scenario
 
 $$
-\kappa_r(t) = A_\kappa \sin\left(\frac{2\pi t}{T_\kappa}\right)
+\displaystyle \kappa_r(t) = A_\kappa \sin\left(\frac{2\pi t}{T_\kappa}\right)
 $$
 
 The current tested and final project values in `RoadScenario.m` are:
@@ -80,7 +80,7 @@ The current tested and final project values in `RoadScenario.m` are:
 The steering actuator is modeled as a first-order system:
 
 $$
-\boxed{\dot{\delta} = \frac{K_s u-\delta}{\tau_s}}
+\displaystyle \boxed{\dot{\delta} = \frac{K_s u-\delta}{\tau_s}}
 $$
 
 | Symbol | Meaning | Unit | Project value |
@@ -94,7 +94,7 @@ $$
 $\tau_s$ controls actuator delay: a smaller time constant makes the steering angle approach the command faster. The steering angle is saturated so that:
 
 $$
-\delta_{\mathrm{sat}} =
+\displaystyle \delta_{\mathrm{sat}} =
 \begin{cases}
 \delta_{\max}, & \delta>\delta_{\max},\\
 \delta, & -\delta_{\max}\leq\delta\leq\delta_{\max},\\
@@ -107,7 +107,7 @@ $$
 The controller uses proportional negative feedback on lateral and heading errors:
 
 $$
-\boxed{u=a_c\left(-K_y e_y-K_\phi e_\phi\right)}
+\displaystyle \boxed{u=a_c\left(-K_y e_y-K_\phi e_\phi\right)}
 $$
 
 | Symbol | Meaning | Unit | Project value |
@@ -128,7 +128,7 @@ The negative sign provides correction: for example, a positive lateral error pro
 The state vector is:
 
 $$
-\mathbf{x}=
+\displaystyle \mathbf{x}=
 \begin{bmatrix}
 e_y\\
 e_\phi\\
@@ -139,7 +139,7 @@ $$
 Without the controller switch, the system equations are:
 
 $$
-\boxed{
+\displaystyle \boxed{
 \begin{aligned}
 \dot{e}_y &= v e_\phi+d_y,\\
 \dot{e}_\phi &= \frac{v}{L}\delta-v\kappa_r+d_\phi,\\
@@ -151,7 +151,7 @@ $$
 After substituting the state-feedback controller:
 
 $$
-\boxed{
+\displaystyle \boxed{
 \begin{aligned}
 \dot{e}_y &= v e_\phi+d_y,\\
 \dot{e}_\phi &= \frac{v}{L}\delta-v\kappa_r+d_\phi,\\
@@ -165,13 +165,13 @@ $$
 The controller-off/no-disturbance linear part can be written as:
 
 $$
-\dot{\mathbf{x}}=A\mathbf{x}+B u+E\mathbf{w}
+\displaystyle \dot{\mathbf{x}}=A\mathbf{x}+B u+E\mathbf{w}
 $$
 
 with:
 
 $$
-\mathbf{x}=
+\displaystyle \mathbf{x}=
 \begin{bmatrix}
 e_y\\
 e_\phi\\
@@ -189,7 +189,7 @@ $$
 Using the feedback $u=a_c(-K_y e_y-K_\phi e_\phi)$, the combined closed-loop matrix has the following structure:
 
 $$
-A_{\mathrm{closed}}=
+\displaystyle A_{\mathrm{closed}}=
 \begin{bmatrix}
 0 & v & 0\\
 0 & 0 & \dfrac{v}{L}\\
@@ -206,7 +206,7 @@ The road-curvature and disturbance inputs enter the second and other state equat
 The simulation generates both a lateral disturbance and a heading-rate disturbance as pulse signals.
 
 $$
-d_y(t)=
+\displaystyle d_y(t)=
 \begin{cases}
 D_y, & t_s\leq t\leq t_e,\\
 0, & \text{otherwise},
@@ -214,7 +214,7 @@ D_y, & t_s\leq t\leq t_e,\\
 $$
 
 $$
-d_\phi(t)=
+\displaystyle d_\phi(t)=
 \begin{cases}
 D_\phi, & t_s\leq t\leq t_e,\\
 0, & \text{otherwise}.
@@ -250,7 +250,7 @@ The wheelbase $L$ is inferred from the project equations and is not directly dec
 ## 11. Initial Conditions
 
 $$
-\begin{aligned}
+\displaystyle \begin{aligned}
 e_y(0)&=e_{y0},\\
 e_\phi(0)&=e_{\phi0},\\
 \delta(0)&=\delta_0.
@@ -281,19 +281,19 @@ The Simulink model exports:
 Maximum absolute lateral error:
 
 $$
-\boxed{e_{y,\max}=\max_t |e_y(t)|}
+\displaystyle \boxed{e_{y,\max}=\max_t |e_y(t)|}
 $$
 
 Mean absolute lateral error:
 
 $$
-\boxed{\mathrm{MAE}=\frac{1}{N}\sum_{i=1}^{N}|e_y(t_i)|}
+\displaystyle \boxed{\mathrm{MAE}=\frac{1}{N}\sum_{i=1}^{N}|e_y(t_i)|}
 $$
 
 Final lateral error:
 
 $$
-\boxed{e_{y,\mathrm{final}}=e_y(T_{\mathrm{sim}})}
+\displaystyle \boxed{e_{y,\mathrm{final}}=e_y(T_{\mathrm{sim}})}
 $$
 
 These measures describe road-tracking accuracy and disturbance rejection.
