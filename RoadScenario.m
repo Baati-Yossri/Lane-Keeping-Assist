@@ -20,8 +20,15 @@ v = 30; % m/s
 switch roadScenario
 
     case 1
-        % Constant curvature
-        kappaValues = 0.005 * ones(size(tRoad));
+    % Straight road followed by a constant-curvature bend
+
+    straightDuration = 2.0;  % seconds
+    curveCurvature = 0.005;  % 1/m
+
+    kappaValues = zeros(size(tRoad));
+
+    % Start the bend after the straight section
+    kappaValues(tRoad >= straightDuration) = curveCurvature;
 
     
 case 2
